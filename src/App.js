@@ -12,7 +12,7 @@ function App() {
 
 
   const[theCountries, setCountries] = useState([])
-
+  const[theStates, setStates] = useState([])
 
 
   useEffect(() =>{
@@ -49,29 +49,82 @@ function App() {
   }, [setCountries])
   const [isLoading, setLoading] = useState(true);
   const changeSelectOptionHandler = (event) => {
+    console.log(event.target.value)
     setSelected(event.target.value);
   }
 
 
+  useEffect(() => {
+    console.log("GETTING THE states")
+    // async function getStates(){
+    //   const newData = await fetch('/fetchStates', {
+    //     method: 'POST',
+    //     headers:{
+    //       'content-type': 'application/json',
+    //       'Accept' : 'application/json2/22/'
+        
+    //     },
+  
+    //     body: JSON.stringify({
+    //       country: selected
+    //     })
+    //   })
+    //   .then(res => res.json())
+    //   //console.log(newData);
+
+    //   setStates(newData.map(function(obj){
+    //     return obj.STATE
+    //   }))
+    // }
+
+
+    // getStates()
+    
+  }, [setStates])
+
+
+
+  async function getStates(){
+    console.log(selected)
+    const newData = await fetch('/fetchstate', {
+      method: 'POST',
+      headers:{
+        'content-type': 'application/json',
+        'Accept' : 'application/json2/22/'
+      
+      },
+
+      body: JSON.stringify({
+        country: selected
+      })
+    })
+    .then(res => res.json())
+    //console.log(newData);
+
+    setStates(newData.map(function(obj){
+      return obj.STATE
+    }))
+
+    options = theStates.map((el) => <option value = {el}>{el}</option>)
+  }
+
+
+ if(selected){
+  getStates()
+  setSelected(null)
+ }
+
+ let options = null
  
-  function processCountries(newData){
-    for(var i = 0; i < newData.length; i ++){
-      countries.push(newData[i].country)
-     
-    }
-    //console.log(countries)
+
+
   
 
-  }
   
-
-  async function getStates(url){
-
-  }
 
 
   const postData = async(country) =>{
-    const newData = await fetch('/fetchStates', {
+    const newData = await fetch('/fetchstate', {
       method: 'POST',
       headers:{
         'content-type': 'application/json',
@@ -100,12 +153,7 @@ function App() {
   }
 
   
-  
-  
 
- 
-  
-  
  
   return (
     <div className="App">
@@ -117,7 +165,18 @@ function App() {
                 -- Select Country --
               </option>
               {theCountries.map(region => (
-                <option value = "choose">{region}</option>
+                <option value = {region}>{region}</option>
+              ))}
+             
+            </select>
+          </div>
+          <div>
+          <select onChange={changeSelectOptionHandler}>
+              <option value = "choose" disabled selected = "selected">
+                -- Select State --
+              </option>
+              {theStates.map(region => (
+                <option value = {region}>{region}</option>
               ))}
              
             </select>

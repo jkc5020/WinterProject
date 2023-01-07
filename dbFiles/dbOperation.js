@@ -28,6 +28,8 @@ const getStates = async(country) =>{
     try{
         let pool = await sqlConnectionToServer.connect(config);
         let states = await pool.request().query(`SELECT STATE FROM REGION WHERE COUNTRY =  '${country}'`)
+        console.log(country)
+        console.log("getting the states")
         console.log(states)
         return states
     }

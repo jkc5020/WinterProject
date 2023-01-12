@@ -1,4 +1,8 @@
-
+/**
+ * Server.js
+ * @author Jaron Cummings
+ * Implements API endpoints for front end to access database
+ */
 const express = require('express'),
         dbOperation = require('./dbFiles/dbOperation'),
         cors = require('cors');
@@ -10,15 +14,14 @@ const app = express()
 var bodyParser = require('body-parser')
 
 var jsonParser = bodyParser.json()
-var urlencodedParser = bodyParser.urlencoded({extended: false})
-
-// app.get('/api', function(req, res){
-//     console.log("Called");
-//     console.log("hellooo")
-// })
 
 
 
+
+
+/**
+ * API endpoint to retrieve countries from database
+ */
 app.get('/fetchCountries', async (req, res) =>{
     
     const result = await dbOperation.getCountries()
@@ -26,21 +29,26 @@ app.get('/fetchCountries', async (req, res) =>{
     
 })
 
+/**
+ * API endpoint to retrieve states from database based on the country provided
+ */
 app.post('/fetchstate', jsonParser, async (req, res) => {
-    console.log(' fetchState called');
-    console.log(req.body.country)
+    
     const result = await dbOperation.getStates(req.body.country)
     res.send(result.recordset)
-    console.log(result)
+    
 })
 
-app.get('/quit ', function(req, res){
-    console.log("Called");
-    res.send({result: ''})
-})
+
 app.listen(API_PORT, () => console.log(`Listening on port ${API_PORT}`));
 
-
-dbOperation.getEmployees().then(res => {
-    console.log(res);
+/**
+ * Retrieves data based off selected state and country
+ */
+app.post('/retrieveData', jsonParser, async(req, res) => {
+   
+    const result = await dbOperation.retrieveData(req.body.country, req.body.state)
+    res.send(result.recordset)
+    
 })
+

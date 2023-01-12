@@ -1,3 +1,7 @@
+/**
+ * Config to access the database
+ */
+
 const config = {
     host: "localhost",
     user: 'jcummings',

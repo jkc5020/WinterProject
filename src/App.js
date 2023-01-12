@@ -1,25 +1,48 @@
-
+/**
+ * App.js 
+ * @author Jaron Cummings
+ * App.js is the main view of the app. 
+ */
 import './App.css';
 import React, { Suspense, useEffect, useState } from 'react';
-// import { application } from 'express';
+
 function App() {
 
   let countries = []
-  let states = []
+  
   const [selected, setSelected] = React.useState("");
-  const test = ["1", "2", "3"]
+  
+  // original state of the UI
+  var originalState = [
+    {
+      "Sub_Category": "",
+      "tQuanity": 0,
+      "Purchase_Year": 0,
+      "Count_Year": 0,
+      "Purchase_Month": "",
+      "count_Month": 0,
+      "Female_count": 0,
+      "Male_count": 0,
+      "avg_Customer_Age": 0,
+      "Max_Customer_Age": 0,
+      "Min_Customer_Age": 0
+    }
+  ]
+
+  const [currentCountry, setCurrentCountry] = React.useState(""); // changes state when user changes the country
+  
+  const [selectedState, setSelectedState] = React.useState("") // changes state when user changes state
+  const[theCountries, setCountries] = useState([]) // changes the array of countries depending on the database
+  const[theStates, setStates] = useState([]) // displays state of the set of states corresponding to a country
+  const[theData, setTheData] = useState(originalState) // changes state of returned data analysis.
 
 
-
-  const[theCountries, setCountries] = useState([])
-  const[theStates, setStates] = useState([])
-
-
+  // re-renders UI when countries are retrieved from database
   useEffect(() =>{
-    console.log("in the useEffect")
+   
     async function getCountries(url){
 
-      console.log("in the async function")
+      
      
       const newData = await fetch(url, {
         method: 'GET',
@@ -32,15 +55,15 @@ function App() {
       
 
       setCountries(newData.map(function(obj){
-        console.log(obj.country)
+        
         return obj.country;
       }))
-      console.log(theCountries)
+    
     }
 
 
     getCountries('/fetchCountries')
-    console.log(theCountries)
+  
     
     
 
@@ -48,44 +71,32 @@ function App() {
 
   }, [setCountries])
   const [isLoading, setLoading] = useState(true);
-  const changeSelectOptionHandler = (event) => {
-    console.log(event.target.value)
+
+  // changes selected country
+  const changeSelectOptionHandlerCountry = (event) => {
+
+    
     setSelected(event.target.value);
+   
   }
 
 
-  useEffect(() => {
-    console.log("GETTING THE states")
-    // async function getStates(){
-    //   const newData = await fetch('/fetchStates', {
-    //     method: 'POST',
-    //     headers:{
-    //       'content-type': 'application/json',
-    //       'Accept' : 'application/json2/22/'
-        
-    //     },
-  
-    //     body: JSON.stringify({
-    //       country: selected
-    //     })
-    //   })
-    //   .then(res => res.json())
-    //   //console.log(newData);
-
-    //   setStates(newData.map(function(obj){
-    //     return obj.STATE
-    //   }))
-    // }
-
-
-    // getStates()
-    
-  }, [setStates])
+  // changes selected state
+  const changeSelectOptionHandlerState = (event) => {
+    setSelectedState(event.target.value)
+   
+  }
 
 
 
+
+
+  /**
+   * Async function that retrives states based off existing selection of 
+   * current country
+   */
   async function getStates(){
-    console.log(selected)
+   
     const newData = await fetch('/fetchstate', {
       method: 'POST',
       headers:{
@@ -99,22 +110,27 @@ function App() {
       })
     })
     .then(res => res.json())
-    //console.log(newData);
+    
 
     setStates(newData.map(function(obj){
       return obj.STATE
     }))
 
-    options = theStates.map((el) => <option value = {el}>{el}</option>)
+    // options = theStates.map((el) => <option value = {el}>{el}</option>)
   }
 
 
  if(selected){
   getStates()
+  if(selected != null){
+    setCurrentCountry(selected)
+    
+  }
+ 
   setSelected(null)
  }
 
- let options = null
+ 
  
 
 
@@ -122,9 +138,13 @@ function App() {
 
   
 
+/**
+ * Retrieves data based off country and state selected from server
+ */
+async function postData(){
 
-  const postData = async(country) =>{
-    const newData = await fetch('/fetchstate', {
+  
+    const newData = await fetch('/retrieveData', {
       method: 'POST',
       headers:{
         'content-type': 'application/json',
@@ -133,35 +153,30 @@ function App() {
       },
 
       body: JSON.stringify({
-        country: country
+        country: currentCountry,
+        state: selectedState
       })
     })
+    
     .then(res => res.json())
-    //console.log(newData);
+    setTheData(newData)
+    
+    
   }
   
 
-  function demo(){
-    return <option>Hello</option>
-  }
-  function getCountry(){
-    console.log(countries)
-    return countries.map((country) =>{
-      
-      return <option>{country}</option>;
-    })
-  }
+  
 
   
 
- 
+ // render
   return (
     <div className="App">
       <form>
           <div>
         
-            <select onChange={changeSelectOptionHandler}>
-              <option value = "choose" disabled selected = "selected">
+            <select onChange={changeSelectOptionHandlerCountry}>
+              <option value = "choose">
                 -- Select Country --
               </option>
               {theCountries.map(region => (
@@ -171,8 +186,8 @@ function App() {
             </select>
           </div>
           <div>
-          <select onChange={changeSelectOptionHandler}>
-              <option value = "choose" disabled selected = "selected">
+          <select onChange={changeSelectOptionHandlerState}>
+              <option value = "choose">
                 -- Select State --
               </option>
               {theStates.map(region => (
@@ -180,6 +195,32 @@ function App() {
               ))}
              
             </select>
+          </div>
+          <div>
+            <button type = "button" onClick={() => postData()}>Retrieve Data</button>
+          </div>
+          <div>
+            <p>
+              <h3>The following data analysis is from a dataset of 30+K</h3>
+              <h3>Orders made by customers in various parts of the world</h3>
+              <h3>Selecing a country and state will perform some analysis on the data</h3>
+              <h3>Of that region</h3>
+            </p>
+          </div>
+          <div>
+            <p>
+              <h2>Most Popular Sub Category:   {theData[0].Sub_Category} </h2>
+              <h2>Quanity of Sub Category:       {theData[0].tQuanity}</h2>
+              <h2>Most popular Purchase Year:   {theData[0].Purchase_Year}</h2>
+              <h2>Count of {theData[0].Purchase_Year}:  {theData[0].Count_Year}</h2>
+              <h2>Most popular Purchase Month:  {theData[0].Purchase_Month}</h2>
+              <h2>Count of {theData[0].Purchase_Month}:    {theData[0].count_Month}</h2>
+              <h2>Number of Females:    {theData[0].Female_count}</h2>
+              <h2>Number of Males:      {theData[0].Male_count}</h2>
+              <h2>Average Customer Age: {theData[0].avg_Customer_Age}</h2>
+              <h2>Max Customer Age:  {theData[0].Max_Customer_Age}</h2>
+              <h2>Min Customer Age:  {theData[0].Min_Customer_Age}</h2>
+            </p>
           </div>
         
       </form>
